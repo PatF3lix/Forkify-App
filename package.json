@@ -17,7 +17,9 @@
   },
   "homepage": "https://github.com/PatF3lix/Forkify-App#readme",
   "dependencies": {
-    "parcel": "^2.10.3"
+    "core-js": "^3.33.3",
+    "parcel": "^2.10.3",
+    "regenerator-runtime": "^0.14.0"
   },
   "devDependencies": {
     "@parcel/transformer-sass": "^2.10.3"
