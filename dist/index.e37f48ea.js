@@ -589,12 +589,6 @@ const timeout = function(s) {
         }, s * 1000);
     });
 };
-// https://forkify-api.herokuapp.com/v2
-//API key : 5be600ac-b2a4-4a3c-a8de-ed748864cb2d
-//Get all recipes/Create recipe: https://forkify-api.herokuapp.com/api/v2/recipes?search=pizza&key=<insert your key>
-//https://forkify-api.herokuapp.com/api/v2/recipes
-//Get recipe/Delete recipe: https://forkify-api.herokuapp.com/api/v2/recipes/5ed6604591c37cdc054bc886?key=<insert your key>
-//https://forkify-api.herokuapp.com/api/v2/recipes/:id
 ///////////////////////////////////////
 const controlRecipes = async function() {
     try {
@@ -2497,8 +2491,12 @@ const createStateRecipe = function(data) {
     };
 };
 const loadRecipe = async function(id) {
-    const data = await (0, _helperJs.getJson)(`${(0, _configJs.API_URL)}/${id}?key=${(0, _configJs.API_KEY)}`);
-    createStateRecipe(data);
+    try {
+        const data = await (0, _helperJs.getJson)(`${(0, _configJs.API_URL)}/${id}?key=${(0, _configJs.API_KEY)}`);
+        createStateRecipe(data);
+    } catch (error) {
+        alert(error);
+    }
 };
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config.js":"k5Hzs","./helper.js":"lVRAz"}],"k5Hzs":[function(require,module,exports) {
@@ -2511,26 +2509,39 @@ const loadRecipe = async function(id) {
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "API_URL", ()=>API_URL);
 parcelHelpers.export(exports, "API_KEY", ()=>API_KEY);
+parcelHelpers.export(exports, "TIMEOUT_SEC", ()=>TIMEOUT_SEC);
 const API_URL = "https://forkify-api.herokuapp.com/api/v2/recipes";
 const API_KEY = "5be600ac-b2a4-4a3c-a8de-ed748864cb2d";
+const TIMEOUT_SEC = 10;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lVRAz":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getJson", ()=>getJson);
-var _regeneratorRuntime = require("regenerator-runtime");
+var _configJs = require("./config.js");
+/**The goal of this module is to contain a helper functions that we reuse
+ * multiple times in our project */ const timeout = function(s) {
+    return new Promise(function(_, reject) {
+        setTimeout(function() {
+            reject(new Error(`Request took too long! Timeout after ${s} second`));
+        }, s * 1000);
+    });
+};
 const getJson = async function(url) {
     try {
-        const response = await fetch(url);
+        const response = await Promise.race([
+            fetch(url),
+            timeout((0, _configJs.TIMEOUT_SEC))
+        ]);
         if (!response.ok) throw new Error(`${data.message} (${res.status})`);
         const data = await response.json();
         return data;
     } catch (error) {
-        alert(error);
+        throw error;
     }
 };
 
-},{"regenerator-runtime":"dXNgZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"l60JC":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config.js":"k5Hzs"}],"l60JC":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _iconsSvg = require("url:../../img/icons.svg"); //parcel 2
