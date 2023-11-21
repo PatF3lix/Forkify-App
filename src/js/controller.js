@@ -3,7 +3,6 @@ import recipeView from './views/recipeView.js';
 
 import 'core-js/stable';
 import 'regenerator-runtime';
-// console.log(icons);
 
 const recipeContainer = document.querySelector('.recipe');
 
