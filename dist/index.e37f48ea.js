@@ -582,13 +582,6 @@ var _recipeViewJs = require("./views/recipeView.js");
 var _recipeViewJsDefault = parcelHelpers.interopDefault(_recipeViewJs);
 var _regeneratorRuntime = require("regenerator-runtime");
 const recipeContainer = document.querySelector(".recipe");
-const timeout = function(s) {
-    return new Promise(function(_, reject) {
-        setTimeout(function() {
-            reject(new Error(`Request took too long! Timeout after ${s} second`));
-        }, s * 1000);
-    });
-};
 ///////////////////////////////////////
 const controlRecipes = async function() {
     try {
@@ -600,13 +593,14 @@ const controlRecipes = async function() {
         //Rendinering recipe
         (0, _recipeViewJsDefault.default).render(_modelJs.state.recipe);
     } catch (error) {
-        alert(error);
+        (0, _recipeViewJsDefault.default).renderError();
     }
 };
-[
-    "hashchange",
-    "load"
-].forEach((ev)=>window.addEventListener(ev, controlRecipes));
+//publisher-subscriber pattern
+const init = function() {
+    (0, _recipeViewJsDefault.default).addHandlerRender(controlRecipes);
+};
+init();
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","core-js/modules/web.immediate.js":"49tUX","regenerator-runtime":"dXNgZ","./model.js":"Y4A21","./views/recipeView.js":"l60JC"}],"gkKU3":[function(require,module,exports) {
 exports.interopDefault = function(a) {
@@ -2495,7 +2489,7 @@ const loadRecipe = async function(id) {
         const data = await (0, _helperJs.getJson)(`${(0, _configJs.API_URL)}/${id}?key=${(0, _configJs.API_KEY)}`);
         createStateRecipe(data);
     } catch (error) {
-        alert(error);
+        throw error;
     }
 };
 
@@ -2533,7 +2527,7 @@ const getJson = async function(url) {
             fetch(url),
             timeout((0, _configJs.TIMEOUT_SEC))
         ]);
-        if (!response.ok) throw new Error(`${data.message} (${res.status})`);
+        if (!response.ok) throw new Error();
         const data = await response.json();
         return data;
     } catch (error) {
@@ -2550,6 +2544,7 @@ var _fractional = require("fractional");
 class RecipeView {
     #parentEl = document.querySelector(".recipe");
     #data;
+    #errorMessage = "We could not find that recipe. Please try another one!";
     render(data) {
         this.#data = data;
         const markup = this.#generateMarkup();
@@ -2559,16 +2554,34 @@ class RecipeView {
     #clear() {
         this.#parentEl.innerHTML = "";
     }
-    renderSpinner = function() {
+    renderSpinner() {
         const markup = `
         <div class="spinner">
           <svg>
             <use href="${(0, _iconsSvgDefault.default)}#icon-loader"></use>
           </svg>
         </div>`;
-        this.#parentEl.innerHTML = "";
+        this.#clear();
         this.#parentEl.insertAdjacentHTML("afterbegin", markup);
-    };
+    }
+    renderError(message = this.#errorMessage) {
+        const markup = `<div class="error">
+            <div>
+              <svg>
+                <use href="${(0, _iconsSvgDefault.default)}#icon-alert-triangle"></use>
+              </svg>
+            </div>
+            <p>${message}</p>
+          </div>`;
+        this.#clear();
+        this.#parentEl.insertAdjacentHTML("afterbegin", markup);
+    }
+    addHandlerRender(handler) {
+        [
+            "hashchange",
+            "load"
+        ].forEach((ev)=>window.addEventListener(ev, handler));
+    }
     #generateMarkup() {
         return `<figure class="recipe__fig">
           <img src="${this.#data.image}" alt="${this.#data.title}" class="recipe__img" />

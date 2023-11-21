@@ -25,6 +25,6 @@ export const loadRecipe = async function (id) {
     const data = await getJson(`${API_URL}/${id}?key=${API_KEY}`);
     createStateRecipe(data);
   } catch (error) {
-    alert(error);
+    throw error;
   }
 };
