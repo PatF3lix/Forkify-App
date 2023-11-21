@@ -1,3 +1,7 @@
+import { API_URL } from './config.js';
+import { API_KEY } from './config.js';
+import { getJson } from './helper.js';
+
 export const state = {
   recipe: {},
 };
@@ -17,15 +21,6 @@ const createStateRecipe = function (data) {
 };
 
 export const loadRecipe = async function (id) {
-  try {
-    const response = await fetch(
-      `https://forkify-api.herokuapp.com/api/v2/recipes/${id}?key=5be600ac-b2a4-4a3c-a8de-ed748864cb2d`
-    );
-    if (!response.ok) throw new Error(`${data.message} (${res.status})`);
-
-    const data = await response.json();
-    createStateRecipe(data);
-  } catch (error) {
-    alert(error);
-  }
+  const data = await getJson(`${API_URL}/${id}?key=${API_KEY}`);
+  createStateRecipe(data);
 };

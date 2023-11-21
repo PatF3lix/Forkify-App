@@ -2478,6 +2478,8 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "state", ()=>state);
 parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe);
+var _configJs = require("./config.js");
+var _helperJs = require("./helper.js");
 const state = {
     recipe: {}
 };
@@ -2495,17 +2497,40 @@ const createStateRecipe = function(data) {
     };
 };
 const loadRecipe = async function(id) {
+    const data = await (0, _helperJs.getJson)(`${(0, _configJs.API_URL)}/${id}?key=${(0, _configJs.API_KEY)}`);
+    createStateRecipe(data);
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config.js":"k5Hzs","./helper.js":"lVRAz"}],"k5Hzs":[function(require,module,exports) {
+/**
+ *In this file, we will basically put all the variables that should be constants
+ *and should be reused across the project.
+ *The goal of having this file with all these variables is that it will allow us to easily configure
+ *our project by simply changing some of the data that is here in this configuration file.
+ */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "API_URL", ()=>API_URL);
+parcelHelpers.export(exports, "API_KEY", ()=>API_KEY);
+const API_URL = "https://forkify-api.herokuapp.com/api/v2/recipes";
+const API_KEY = "5be600ac-b2a4-4a3c-a8de-ed748864cb2d";
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lVRAz":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "getJson", ()=>getJson);
+var _regeneratorRuntime = require("regenerator-runtime");
+const getJson = async function(url) {
     try {
-        const response = await fetch(`https://forkify-api.herokuapp.com/api/v2/recipes/${id}?key=5be600ac-b2a4-4a3c-a8de-ed748864cb2d`);
+        const response = await fetch(url);
         if (!response.ok) throw new Error(`${data.message} (${res.status})`);
         const data = await response.json();
-        createStateRecipe(data);
+        return data;
     } catch (error) {
         alert(error);
     }
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"l60JC":[function(require,module,exports) {
+},{"regenerator-runtime":"dXNgZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"l60JC":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _iconsSvg = require("url:../../img/icons.svg"); //parcel 2
