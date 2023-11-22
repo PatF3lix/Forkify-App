@@ -2,6 +2,7 @@ import { API_URL } from './config.js';
 import { API_KEY } from './config.js';
 import { RES_PER_PAGE } from './config.js';
 import { getJson } from './helper.js';
+import { sendJson } from './helper.js';
 
 export const state = {
   recipe: {},
@@ -16,7 +17,7 @@ export const state = {
 
 const createStateRecipe = function (data, id) {
   const { recipe: loadedRecipe } = data.data;
-  state.recipe = {
+  return {
     id: loadedRecipe.id,
     title: loadedRecipe.title,
     publisher: loadedRecipe.publisher,
@@ -25,11 +26,8 @@ const createStateRecipe = function (data, id) {
     servings: loadedRecipe.servings,
     cookingTime: loadedRecipe.cooking_time,
     ingredients: loadedRecipe.ingredients,
+    ...(loadedRecipe.key && { key: loadedRecipe.key }), //unables you to conditionally add keys to object if they exist in the data
   };
-
-  if (state.bookmarks.some(bookmark => bookmark.id === id))
-    state.recipe.bookmarked = true;
-  else state.recipe.bookmarked = false;
 };
 
 const createAllStateRecipes = function (data) {
@@ -47,7 +45,10 @@ const createAllStateRecipes = function (data) {
 export const loadRecipe = async function (id) {
   try {
     const data = await getJson(`${API_URL}/${id}?key=${API_KEY}`);
-    createStateRecipe(data, id);
+    state.recipe = createStateRecipe(data, id);
+    if (state.bookmarks.some(bookmark => bookmark.id === id))
+      state.recipe.bookmarked = true;
+    else state.recipe.bookmarked = false;
   } catch (error) {
     throw error;
   }
@@ -102,6 +103,39 @@ export const deleteBookmarked = function (id) {
   //mark current recipe as NOT bookmark
   if (id === state.recipe.id) state.recipe.bookmarked = false;
   persistBookmarks();
+};
+
+export const uploadRecipe = async function (newRecipe) {
+  try {
+    const ingredients = Object.entries(newRecipe)
+      .filter(entry => entry[0].startsWith('ingredient') && entry[1] !== '')
+      .map(ing => {
+        const ingArr = ing[1].replaceAll(' ', '').split(',');
+        if (ingArr.length !== 3)
+          throw new Error(
+            'Wrong ingredient format! Please use the correct format!'
+          );
+        const [quantity, unit, description] = ingArr;
+        return { quantity: quantity ? +quantity : null, unit, description };
+      });
+
+    const recipe = {
+      title: newRecipe.title,
+      source_url: newRecipe.sourceUrl,
+      image_url: newRecipe.image,
+      publisher: newRecipe.publisher,
+      cooking_time: +newRecipe.cookingTime,
+      servings: +newRecipe.servings,
+      ingredients,
+    };
+
+    const data = await sendJson(`${API_URL}?key=${API_KEY}`, recipe);
+    state.recipe = createStateRecipe(data);
+    addBookmark(state.recipe);
+    console.log(data);
+  } catch (error) {
+    throw new Error(`${error.message}`);
+  }
 };
 
 const init = function () {

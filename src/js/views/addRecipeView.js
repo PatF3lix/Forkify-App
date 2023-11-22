@@ -7,6 +7,7 @@ class AddRecipeView extends View {
   _overlay = document.querySelector('.overlay');
   _btnOpen = document.querySelector('.nav__btn--add-recipe');
   _btnClose = document.querySelector('.btn--close-modal');
+  _message = 'Recipe was successfully uploaded :)';
 
   constructor() {
     super();
@@ -26,6 +27,18 @@ class AddRecipeView extends View {
   _addHandlerHideWindow() {
     this._btnClose.addEventListener('click', this._toggleWindow.bind(this));
     this._overlay.addEventListener('click', this._toggleWindow.bind(this));
+  }
+
+  addHandlerUpload(handler) {
+    this._parentEl.addEventListener('submit', function (e) {
+      e.preventDefault();
+      /**This will give us an array which will contain all the fields with all th values. */
+      const dataArr = [...new FormData(this)];
+
+      /**fromEntries: Returns an object created by key-value entries for properties and methods */
+      const data = Object.fromEntries(dataArr);
+      handler(data);
+    });
   }
 
   _generateMarkup() {}
