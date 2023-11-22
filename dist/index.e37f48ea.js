@@ -651,12 +651,15 @@ const controlAddRecipe = async function(newRecipe) {
         (0, _recipeViewJsDefault.default).render(_modelJs.state.recipe);
         //Success Message
         (0, _addRecipeViewJsDefault.default).renderMessage();
+        //Render Bookmarkview
+        (0, _bookmarksViewJsDefault.default).render(_modelJs.state.bookmarks);
+        //Change Id in url
+        window.history.pushState(null, "", `#${_modelJs.state.recipe.id}`);
         //Close form
         setTimeout(function() {
             (0, _addRecipeViewJsDefault.default)._toggleWindow();
         }, (0, _configJs.MODAL_CLOSE_SEC) * 1000);
     } catch (error) {
-        console.error(error);
         (0, _addRecipeViewJsDefault.default).renderError(error.message);
     }
 };
@@ -1969,7 +1972,7 @@ const createAllStateRecipes = function(data) {
 };
 const loadRecipe = async function(id) {
     try {
-        const data = await (0, _helperJs.getJson)(`${(0, _configJs.API_URL)}/${id}?key=${(0, _configJs.API_KEY)}`);
+        const data = await (0, _helperJs.AJAX)(`${(0, _configJs.API_URL)}/${id}?key=${(0, _configJs.API_KEY)}`);
         state.recipe = createStateRecipe(data, id);
         if (state.bookmarks.some((bookmark)=>bookmark.id === id)) state.recipe.bookmarked = true;
         else state.recipe.bookmarked = false;
@@ -1981,7 +1984,7 @@ const loadSearchResults = async function(query) {
     try {
         state.search.query = query;
         state.search.page = 1;
-        const data = await (0, _helperJs.getJson)(`${(0, _configJs.API_URL)}?search=${query}`);
+        const data = await (0, _helperJs.AJAX)(`${(0, _configJs.API_URL)}?search=${query}&key=${(0, _configJs.API_KEY)}`);
         createAllStateRecipes(data);
     } catch (error) {
         throw error;
@@ -2037,7 +2040,7 @@ const uploadRecipe = async function(newRecipe) {
             servings: +newRecipe.servings,
             ingredients
         };
-        const data = await (0, _helperJs.sendJson)(`${(0, _configJs.API_URL)}?key=${(0, _configJs.API_KEY)}`, recipe);
+        const data = await (0, _helperJs.AJAX)(`${(0, _configJs.API_URL)}?key=${(0, _configJs.API_KEY)}`, recipe);
         state.recipe = createStateRecipe(data);
         addBookmark(state.recipe);
         console.log(data);
@@ -2106,8 +2109,7 @@ exports.export = function(dest, destName, get) {
 },{}],"lVRAz":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "getJson", ()=>getJson);
-parcelHelpers.export(exports, "sendJson", ()=>sendJson);
+parcelHelpers.export(exports, "AJAX", ()=>AJAX);
 var _configJs = require("./config.js");
 var _modelJs = require("./model.js");
 /**The goal of this module is to contain a helper functions that we reuse
@@ -2118,28 +2120,15 @@ var _modelJs = require("./model.js");
         }, s * 1000);
     });
 };
-const getJson = async function(url) {
+const AJAX = async function(url, uploadData) {
     try {
-        const response = await Promise.race([
-            fetch(url),
-            timeout((0, _configJs.TIMEOUT_SEC))
-        ]);
-        if (!response.ok) throw new Error();
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        throw error;
-    }
-};
-const sendJson = async function(url, uploadData) {
-    try {
-        const fetchPro = fetch(url, {
+        const fetchPro = uploadData ? fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(uploadData)
-        });
+        }) : fetch(url);
         const response = await Promise.race([
             fetchPro,
             timeout((0, _configJs.TIMEOUT_SEC))
