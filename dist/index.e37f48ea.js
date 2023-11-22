@@ -621,13 +621,17 @@ const controlServings = function(newServings) {
     //Update the recipe servings (in state)
     _modelJs.updateServings(newServings);
     //Update the recipe View
-    // recipeView.render(model.state.recipe);
+    (0, _recipeViewJsDefault.default).update(_modelJs.state.recipe);
+};
+const controlAddBookmark = function() {
+    _modelJs.addBookmark(_modelJs.state.recipe);
     (0, _recipeViewJsDefault.default).update(_modelJs.state.recipe);
 };
 //publisher-subscriber pattern
 const init = function() {
     (0, _recipeViewJsDefault.default).addHandlerRender(controlRecipes);
     (0, _recipeViewJsDefault.default).addHandlerUpdateServings(controlServings);
+    (0, _recipeViewJsDefault.default).addHandlerAddBookmark(controlAddBookmark);
     (0, _searchViewJsDefault.default).addHandlerSearch(controlSearchResults);
     (0, _paginationViewJsDefault.default).addHandlerClick(controlPagination);
 };
@@ -1886,6 +1890,7 @@ parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe);
 parcelHelpers.export(exports, "loadSearchResults", ()=>loadSearchResults);
 parcelHelpers.export(exports, "getSearchResultsPage", ()=>getSearchResultsPage);
 parcelHelpers.export(exports, "updateServings", ()=>updateServings);
+parcelHelpers.export(exports, "addBookmark", ()=>addBookmark);
 var _configJs = require("./config.js");
 var _helperJs = require("./helper.js");
 const state = {
@@ -1895,9 +1900,10 @@ const state = {
         results: [],
         resultsPerPage: (0, _configJs.RES_PER_PAGE),
         page: 1
-    }
+    },
+    bookmark: []
 };
-const createStateRecipe = function(data) {
+const createStateRecipe = function(data, id) {
     const { recipe: loadedRecipe } = data.data;
     state.recipe = {
         id: loadedRecipe.id,
@@ -1909,6 +1915,8 @@ const createStateRecipe = function(data) {
         cookingTime: loadedRecipe.cooking_time,
         ingredients: loadedRecipe.ingredients
     };
+    if (state.bookmark.some((bookmark)=>bookmark.id === id)) state.recipe.bookmarked = true;
+    else state.recipe.bookmarked = false;
 };
 const createAllStateRecipes = function(data) {
     const { recipes: allLoadedRecipes } = data.data;
@@ -1924,7 +1932,7 @@ const createAllStateRecipes = function(data) {
 const loadRecipe = async function(id) {
     try {
         const data = await (0, _helperJs.getJson)(`${(0, _configJs.API_URL)}/${id}?key=${(0, _configJs.API_KEY)}`);
-        createStateRecipe(data);
+        createStateRecipe(data, id);
     } catch (error) {
         throw error;
     }
@@ -1949,6 +1957,12 @@ const updateServings = function(newServings) {
         ing.quantity = ing.quantity * newServings / state.recipe.servings;
     });
     state.recipe.servings = newServings;
+};
+const addBookmark = function(recipe) {
+    //Add bookmark
+    state.bookmark.push(recipe);
+    //mark current recipe as bookmarked
+    if (recipe.id === state.recipe.id) state.recipe.bookmarked = true;
 };
 
 },{"./config.js":"k5Hzs","./helper.js":"lVRAz","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"k5Hzs":[function(require,module,exports) {
@@ -2050,6 +2064,13 @@ class RecipeView extends (0, _viewDefault.default) {
             if (+updateTo > 0) handler(+updateTo);
         });
     }
+    addHandlerAddBookmark(handler) {
+        this._parentEl.addEventListener("click", function(e) {
+            const btn = e.target.closest(".btn--bookmark");
+            if (!btn) return;
+            handler();
+        });
+    }
     _generateMarkup() {
         return `<figure class="recipe__fig">
           <img src="${this._data.image}" alt="${this._data.title}" class="recipe__img" />
@@ -2092,9 +2113,9 @@ class RecipeView extends (0, _viewDefault.default) {
               <use href="${0, _iconsSvgDefault.default}#icon-user"></use>
             </svg>
           </div>
-          <button class="btn--round">
+          <button class="btn--round btn--bookmark">
             <svg class="">
-              <use href="${0, _iconsSvgDefault.default}#icon-bookmark-fill"></use>
+              <use href="${0, _iconsSvgDefault.default}#icon-bookmark${this._data.bookmarked ? "-fill" : ""}"></use>
             </svg>
           </button>
         </div>

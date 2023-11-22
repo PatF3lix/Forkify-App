@@ -11,9 +11,10 @@ export const state = {
     resultsPerPage: RES_PER_PAGE,
     page: 1,
   },
+  bookmark: [],
 };
 
-const createStateRecipe = function (data) {
+const createStateRecipe = function (data, id) {
   const { recipe: loadedRecipe } = data.data;
   state.recipe = {
     id: loadedRecipe.id,
@@ -25,6 +26,10 @@ const createStateRecipe = function (data) {
     cookingTime: loadedRecipe.cooking_time,
     ingredients: loadedRecipe.ingredients,
   };
+
+  if (state.bookmark.some(bookmark => bookmark.id === id))
+    state.recipe.bookmarked = true;
+  else state.recipe.bookmarked = false;
 };
 
 const createAllStateRecipes = function (data) {
@@ -42,7 +47,7 @@ const createAllStateRecipes = function (data) {
 export const loadRecipe = async function (id) {
   try {
     const data = await getJson(`${API_URL}/${id}?key=${API_KEY}`);
-    createStateRecipe(data);
+    createStateRecipe(data, id);
   } catch (error) {
     throw error;
   }
@@ -74,4 +79,12 @@ export const updateServings = function (newServings) {
   });
 
   state.recipe.servings = newServings;
+};
+
+export const addBookmark = function (recipe) {
+  //Add bookmark
+  state.bookmark.push(recipe);
+
+  //mark current recipe as bookmarked
+  if (recipe.id === state.recipe.id) state.recipe.bookmarked = true;
 };
