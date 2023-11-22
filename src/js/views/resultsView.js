@@ -7,10 +7,8 @@ class resultsView extends View {
     'We could not find any recipes matching that query. Please try another one!';
 
   _generateMarkup() {
-    const markup = this._data.map(this._generateMarkupPreview).join('');
-    this._parentEl.insertAdjacentHTML('beforebegin', markup);
+    return this._data.map(this._generateMarkupPreview).join('');
   }
-
   _generateMarkupPreview(recipe) {
     return `
         <li class="preview">
