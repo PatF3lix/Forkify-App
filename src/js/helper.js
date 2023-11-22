@@ -1,5 +1,4 @@
 import { TIMEOUT_SEC } from './config.js';
-import { uploadRecipe } from './model.js';
 
 /**The goal of this module is to contain a helper functions that we reuse
  * multiple times in our project */
