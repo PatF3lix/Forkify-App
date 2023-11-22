@@ -11,7 +11,7 @@ export const state = {
     resultsPerPage: RES_PER_PAGE,
     page: 1,
   },
-  bookmark: [],
+  bookmarks: [],
 };
 
 const createStateRecipe = function (data, id) {
@@ -27,7 +27,7 @@ const createStateRecipe = function (data, id) {
     ingredients: loadedRecipe.ingredients,
   };
 
-  if (state.bookmark.some(bookmark => bookmark.id === id))
+  if (state.bookmarks.some(bookmark => bookmark.id === id))
     state.recipe.bookmarked = true;
   else state.recipe.bookmarked = false;
 };
@@ -83,8 +83,17 @@ export const updateServings = function (newServings) {
 
 export const addBookmark = function (recipe) {
   //Add bookmark
-  state.bookmark.push(recipe);
+  state.bookmarks.push(recipe);
 
   //mark current recipe as bookmarked
   if (recipe.id === state.recipe.id) state.recipe.bookmarked = true;
+};
+
+export const deleteBookmarked = function (id) {
+  //delete bookmark
+  const index = state.bookmarks.findIndex(el => el.id === id);
+  state.bookmarks.splice(index, 1);
+
+  //mark current recipe as NOT bookmark
+  if (id === state.recipe.id) state.recipe.bookmarked = false;
 };
